@@ -11,7 +11,14 @@ export async function root(ctx) {
  * Player Stats GET Handler: return player stats
  */
 export async function players(ctx) {
-  const json = await getPlayerStats();
+  const db = ctx.mongo.db('sonic').collection('playerStats');
+  let playersInDb = await db.find().toArray();
 
-  ctx.body = json;
+  if (playersInDb.length === 0) {
+    const json = await getPlayerStats();
+    db.insert(json.data);
+    playersInDb = json.data;
+  }
+
+  ctx.body = { data: playersInDb };
 }
